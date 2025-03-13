@@ -8,12 +8,36 @@ import java.util.List;
 
 public class Compute {
 
-    private static Board survive(Board board, Piece[] pieces) {
+    public static class MoveStep {
+        private int x;
+        private int y;
+        private int piece; // 0, 1, 2
+
+        public MoveStep(int x, int y, int piece) {
+            this.x = x;
+            this.y = y;
+            this.piece = piece;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public int getPiece() {
+            return piece;
+        }
+    }
+
+    public static MoveStep[] survive(Board board, Piece[] pieces) {
         List<Piece[]> permutations = generatePermutations(pieces);
         for (Piece[] permutation : permutations) {
-            Board result = placePieces(board, permutation, 0);
-            if (result != null) {
-                return result;
+            List<MoveStep> steps = new ArrayList<>();
+            if (tryPlacePieces(board, permutation, 0, steps)) {
+                return steps.toArray(new MoveStep[0]);
             }
         }
         return null;
@@ -43,25 +67,29 @@ public class Compute {
         pieces[j] = temp;
     }
 
-    private static Board placePieces(Board board, Piece[] pieces, int index) {
+    private static boolean tryPlacePieces(Board board, Piece[] pieces, int index, List<MoveStep> steps) {
         if (index == pieces.length) {
-            return board;
+            return true;
         }
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (board.canPlace(pieces[index], i, j)) {
                     Board newBoard = board.place(pieces[index], i, j);
-                    Board result = placePieces(newBoard, pieces, index + 1);
-                    if (result != null) {
-                        return result;
+                    steps.add(new MoveStep(i, j, index));
+
+                    if (tryPlacePieces(newBoard, pieces, index + 1, steps)) {
+                        return true;
                     }
+
+                    // Backtrack if placement doesn't lead to solution
+                    steps.remove(steps.size() - 1);
                 }
             }
         }
-        throw new IllegalStateException("No solution found");
+        return false;
     }
 
-    public static Board step(Board board, Piece[] pieces, Evaluate.Method method) {
+    public static MoveStep[] step(Board board, Piece[] pieces, Evaluate.Method method) {
         switch (method) {
             case GIVE_UP:
 //                return giveUp(board, pieces);
@@ -72,8 +100,7 @@ public class Compute {
             case RANDOM:
 //                return random(board, pieces);
             default:
-                return board;
+                return new MoveStep[0];
         }
     }
-
 }

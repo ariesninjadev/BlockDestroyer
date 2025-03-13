@@ -22,7 +22,7 @@ public class Game {
 
     public void step(Piece[] pieces) {
         Method method = Evaluate.checkFrame(currentFrame);
-        currentFrame = new Frame(Compute.step(currentFrame.getBoard(), currentFrame.getPieces(), method), pieces);
+//        currentFrame = new Frame(Compute.step(currentFrame.getBoard(), currentFrame.getPieces(), method), pieces);
     }
 
     public void display() {
